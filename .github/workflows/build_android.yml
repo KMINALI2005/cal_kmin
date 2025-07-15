@@ -42,19 +42,26 @@ jobs:
       # ========================================================================
 
       # الخطوة 5: تثبيت Android SDK لتوفير أداة sdkmanager
-      # هذا يحل مشكلة "sdkmanager: command not found"
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       # الخطوة 6: قبول التراخيص وتثبيت أدوات البناء اللازمة
-      # هذا يحل مشكلة "license not accepted" و "Aidl not found"
       - name: Accept Licenses and Install Build-Tools
         run: |
           yes | sdkmanager --licenses
           yes | sdkmanager "build-tools;34.0.0" "platforms;android-34"
 
+      # الخطوة 6.1: إضافة build-tools و platform-tools للمسار
+      - name: Add Android SDK tools to PATH
+        run: |
+          echo "${ANDROID_SDK_ROOT}/build-tools/34.0.0" >> $GITHUB_PATH
+          echo "${ANDROID_SDK_ROOT}/platform-tools" >> $GITHUB_PATH
+
+      # (اختياري) طباعة محتوى build-tools للتأكد من وجود الملفات
+      - name: List build-tools directory
+        run: ls -l ${ANDROID_SDK_ROOT}/build-tools/34.0.0
+
       # الخطوة 7: تثبيت متطلبات Buildozer ومكتبات النظام
-      # هذا يحل مشاكل التجميع الغامضة مثل "yidl"
       - name: Install Buildozer and system dependencies
         run: |
           sudo apt-get update
@@ -75,7 +82,6 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       # الخطوة 8: بناء التطبيق باستخدام Buildozer
-      # سيجد Buildozer الآن بيئة مكتملة وجاهزة للبناء
       - name: Build with Buildozer
         run: buildozer -v android debug
 
